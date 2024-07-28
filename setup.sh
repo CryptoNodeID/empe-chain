@@ -228,44 +228,44 @@ chmod ug+x delegate.sh
 if [ "$VALIDATOR_CREATE_TYPE" == "json" ]; then
     tee create_validator.sh > /dev/null <<EOF
 ${DAEMON_NAME} tx staking create-validator ./validator.json \\
-    --from=${VALIDATOR_KEY_NAME} \\
-    --chain-id=${CHAIN_ID} \\
-    --fees=500${DENOM}
+  --from=${VALIDATOR_KEY_NAME} \\
+  --chain-id=${CHAIN_ID} \\
+  --fees=500${DENOM}
 EOF
 
     tee validator.json > /dev/null <<EOF
 {
-    "pubkey": $(${DAEMON_NAME} comet show-validator),
-    "amount": "1000000${DENOM}",
-    "moniker": "$VALIDATOR_KEY_NAME",
-    "identity": "$INPUT_IDENTITY",
-    "website": "$INPUT_WEBSITE",
-    "security": "$INPUT_EMAIL",
-    "details": "$INPUT_DETAILS",
-    "commission-rate": "0.1",
-    "commission-max-rate": "0.2",
-    "commission-max-change-rate": "0.01",
-    "min-self-delegation": "1"
+  "pubkey": $(${DAEMON_NAME} comet show-validator),
+  "amount": "1000000${DENOM}",
+  "moniker": "$VALIDATOR_KEY_NAME",
+  "identity": "$INPUT_IDENTITY",
+  "website": "$INPUT_WEBSITE",
+  "security": "$INPUT_EMAIL",
+  "details": "$INPUT_DETAILS",
+  "commission-rate": "0.1",
+  "commission-max-rate": "0.2",
+  "commission-max-change-rate": "0.01",
+  "min-self-delegation": "1"
 }
 EOF
 else
     tee create_validator.sh > /dev/null <<EOF
 ${DAEMON_NAME} tx staking create-validator \\
-    --amount=10000000${DENOM} \\
-    --pubkey=$(${DAEMON_NAME} tendermint show-validator) \\
-    --moniker=${VALIDATOR_KEY_NAME} \\
-    --identity=${INPUT_IDENTITY} \\
-    --website=${INPUT_WEBSITE} \\
-    --security-contact=${INPUT_EMAIL} \\
-    --details=${INPUT_DETAILS} \\
-    --chain-id=empe-testnet-2 \\
-    --commission-rate="0.05" \\
-    --commission-max-rate="0.20" \\
-    --commission-max-change-rate="0.01" \\
-    --gas="auto" \\
-    --min-self-delegation="1000000" \\
-    --fees=600${DENOM} \\
-    --from=${VALIDATOR_KEY_NAME}
+  --amount=10000000${DENOM} \\
+  --pubkey=\$(${DAEMON_NAME} tendermint show-validator) \\
+  --moniker=${VALIDATOR_KEY_NAME} \\
+  --identity=${INPUT_IDENTITY} \\
+  --website=${INPUT_WEBSITE} \\
+  --security-contact=${INPUT_EMAIL} \\
+  --details=${INPUT_DETAILS} \\
+  --chain-id=empe-testnet-2 \\
+  --commission-rate="0.05" \\
+  --commission-max-rate="0.20" \\
+  --commission-max-change-rate="0.01" \\
+  --gas="auto" \\
+  --min-self-delegation="1000000" \\
+  --fees=600${DENOM} \\
+  --from=${VALIDATOR_KEY_NAME}
 EOF
 fi
 chmod ug+x create_validator.sh
@@ -282,7 +282,7 @@ chmod ug+x unjail_validator.sh
 
 tee check_validator.sh > /dev/null <<EOF
 #!/bin/bash
-${DAEMON_NAME} query tendermint-validator-set | grep "$(${DAEMON_NAME} tendermint show-address)"
+${DAEMON_NAME} query tendermint-validator-set | grep "$(\${DAEMON_NAME} tendermint show-address)"
 EOF
 chmod ug+x check_validator.sh
 
