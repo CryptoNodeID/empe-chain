@@ -341,6 +341,7 @@ if [[ "$ENABLE_STATE_SYNC" =~ ^[Yy](es)?$ ]]; then
         -e "s|^.*trust_height *=.*|trust_height = $BLOCK_HEIGHT|" \
         -e "s|^.*trust_hash *=.*|trust_hash = \"$TRUST_HASH\"|" \
         ${DAEMON_HOME}/config/config.toml
+    echo "State Sync Enabled!"
 else
     echo "Skipping enabling State Sync."
 fi
