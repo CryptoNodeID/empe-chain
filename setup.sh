@@ -5,7 +5,7 @@ SERVICE_NAME=emped
 INSTALLATION_DIR=$(dirname "$(realpath "$0")")
 CHAIN_ID='empe-testnet-2'
 GENESIS_URL="https://raw.githubusercontent.com/empe-io/empe-chains/master/testnet-2/genesis.json"
-PEERS="edfc10bbf28b5052658b3b8b901d7d0fc25812a0@193.70.45.145:26656,4bd60dee1cb81cb544f545589b8dd286a7b3fd65@149.202.73.140:26656,149383fab60d8845c408dce7bb93c05aa1fd115e@54.37.80.141:26656"
+PEERS="f1e730c741c7edb89e4610e2f24993c5ca2e028b@sentry1.cryptonode.id:22656,66ac611ba87753e92f1e5d792a2b19d4c5080f32@sentry2.cryptonode.id:22656,edfc10bbf28b5052658b3b8b901d7d0fc25812a0@193.70.45.145:26656,4bd60dee1cb81cb544f545589b8dd286a7b3fd65@149.202.73.140:26656,149383fab60d8845c408dce7bb93c05aa1fd115e@54.37.80.141:26656"
 RPC="https://rpc-archive-testnet.empe.io:443"
 SEEDS=""
 DENOM='uempe'
@@ -177,11 +177,11 @@ sed -i.bak \
 
 sed -i 's/minimum-gas-prices *=.*/minimum-gas-prices = "0.025'$DENOM'"/' ${DAEMON_HOME}/config/app.toml
 sed -i \
-  -e 's|^[[:space:]]*pruning *=.*|pruning = "custom"|' \
-  -e 's|^[[:space:]]*pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
-  -e 's|^[[:space:]]*pruning-keep-every *=.*|pruning-keep-every = "0"|' \
-  -e 's|^[[:space:]]*pruning-interval *=.*|pruning-interval = "10"|' \
-  ${DAEMON_HOME}/config/app.toml
+    -e 's|^[[:space:]]*pruning *=.*|pruning = "custom"|' \
+    -e 's|^[[:space:]]*pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+    -e 's|^[[:space:]]*pruning-keep-every *=.*|pruning-keep-every = "0"|' \
+    -e 's|^[[:space:]]*pruning-interval *=.*|pruning-interval = "10"|' \
+    ${DAEMON_HOME}/config/app.toml
 indexer="null" && \
 sed -i -e "s/^[[:space:]]*indexer *=.*/indexer = \"$indexer\"/" ${DAEMON_HOME}/config/config.toml
 
@@ -325,9 +325,28 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-read -p "Do you want to enable the ${DAEMON_NAME} service? (y/N): " ENABLE_SERVICE
-if [[ "$ENABLE_SERVICE" =~ ^[Yy](es)?$ ]]; then
-    sudo systemctl enable ${SERVICE_NAME}.service
+sudo systemctl enable ${SERVICE_NAME}.service
+read -p "Do you want to enable the State Sync? (y/N): " ENABLE_STATE_SYNC
+if [[ "$ENABLE_STATE_SYNC" =~ ^[Yy](es)?$ ]]; then
+    echo "Enabling State Sync..."
+    ${DAEMON_NAME} tendermint unsafe-reset-all --keep-addr-book --home ${DAEMON_HOME}
+    LATEST_HEIGHT=$(curl -s $SNAP_RPC/block | jq -r .result.block.header.height);
+    LATEST_HEIGHT=$(echo "$LATEST_HEIGHT" | awk '{printf "%d000\n", $0 / 1000}')
+    BLOCK_HEIGHT=$((LATEST_HEIGHT - 2000));
+    TRUST_HASH=$(curl -s "$SNAP_RPC/block?height=$BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    echo $LATEST_HEIGHT $BLOCK_HEIGHT $TRUST_HASH
+    sed -i \
+        -e "s|^.*enable *=.*|enable = "true"|" \
+        -e "s|^.*rpc_servers *=.*|rpc_servers = \"$SNAP_RPC,$SNAP_RPC\"|" \
+        -e "s|^.*trust_height *=.*|trust_height = $BLOCK_HEIGHT|" \
+        -e "s|^.*trust_hash *=.*|trust_hash = \"$TRUST_HASH\"|" \
+        ${DAEMON_HOME}/config/config.toml
 else
-    echo "Skipping enabling ${SERVICE_NAME} service."
+    echo "Skipping enabling State Sync."
+fi
+read -p "Do you want to start the ${SERVICE_NAME} service? (y/N): " START_SERVICE
+if [[ "$START_SERVICE" =~ ^[Yy](es)?$ ]]; then
+    sudo systemctl start ${SERVICE_NAME}.service
+else
+    echo "Skipping starting ${SERVICE_NAME} service."
 fi
