@@ -7,6 +7,7 @@ CHAIN_ID='empe-testnet-2'
 GENESIS_URL="https://raw.githubusercontent.com/empe-io/empe-chains/master/testnet-2/genesis.json"
 PEERS="f1e730c741c7edb89e4610e2f24993c5ca2e028b@sentry1.cryptonode.id:22656,66ac611ba87753e92f1e5d792a2b19d4c5080f32@sentry2.cryptonode.id:22656,edfc10bbf28b5052658b3b8b901d7d0fc25812a0@193.70.45.145:26656,4bd60dee1cb81cb544f545589b8dd286a7b3fd65@149.202.73.140:26656,149383fab60d8845c408dce7bb93c05aa1fd115e@54.37.80.141:26656"
 RPC="https://rpc-archive-testnet.empe.io:443"
+SNAP_RPC="https://empe-testnet-rpc.cryptonode.id:443"
 SEEDS=""
 DENOM='uempe'
 REPO=""
@@ -175,7 +176,7 @@ sed -i.bak \
     -e "s/^[[:space:]]*persistent_peers *=.*/persistent_peers = \"${PEERS}\"/" \
     ${DAEMON_HOME}/config/config.toml
 
-sed -i 's/minimum-gas-prices *=.*/minimum-gas-prices = "0.025'$DENOM'"/' ${DAEMON_HOME}/config/app.toml
+sed -i 's/minimum-gas-prices *=.*/minimum-gas-prices = "0.0001'$DENOM'"/' ${DAEMON_HOME}/config/app.toml
 sed -i \
     -e 's|^[[:space:]]*pruning *=.*|pruning = "custom"|' \
     -e 's|^[[:space:]]*pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
@@ -332,7 +333,7 @@ if [[ "$ENABLE_STATE_SYNC" =~ ^[Yy](es)?$ ]]; then
     ${DAEMON_NAME} tendermint unsafe-reset-all --keep-addr-book --home ${DAEMON_HOME}
     LATEST_HEIGHT=$(curl -s $SNAP_RPC/block | jq -r .result.block.header.height);
     LATEST_HEIGHT=$(echo "$LATEST_HEIGHT" | awk '{printf "%d000\n", $0 / 1000}')
-    BLOCK_HEIGHT=$((LATEST_HEIGHT - 2000));
+    BLOCK_HEIGHT=$((LATEST_HEIGHT - 1000));
     TRUST_HASH=$(curl -s "$SNAP_RPC/block?height=$BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     echo $LATEST_HEIGHT $BLOCK_HEIGHT $TRUST_HASH
     sed -i \
