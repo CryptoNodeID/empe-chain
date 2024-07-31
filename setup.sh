@@ -187,17 +187,28 @@ indexer="null" && \
 sed -i -e "s/^[[:space:]]*indexer *=.*/indexer = \"$indexer\"/" ${DAEMON_HOME}/config/config.toml
 
 # Helper scripts
+WALLET_ADDRESS=$(${DAEMON_NAME} keys show $VALIDATOR_KEY_NAME -a)
+VALOPER_ADDRESS=$(${DAEMON_NAME} keys show $VALIDATOR_KEY_NAME --bech val -a)
+
 cd ${INSTALLATION_DIR}
-rm -rf list_keys.sh check_balance.sh create_validator.sh unjail_validator.sh check_validator.sh start_side.sh check_log.sh
+rm -rf ${INSTALLATION_DIR}/helper-scripts
+mkdir ${INSTALLATION_DIR}/helper-scripts
+cd ${INSTALLATION_DIR}/helper-scripts
 
 echo "${DAEMON_NAME} keys list" > list_keys.sh
 chmod ug+x list_keys.sh
 
-echo "${DAEMON_NAME} q bank balances $(${DAEMON_NAME} keys show $VALIDATOR_KEY_NAME -a)" > check_balance.sh
+echo "${DAEMON_NAME} q bank balances ${WALLET_ADDRESS}" > check_balance.sh
 chmod ug+x check_balance.sh
 
 tee claim_commission.sh > /dev/null <<EOF
 #!/bin/bash
+${DAEMON_NAME} tx distribution withdraw-rewards ${VALOPER_ADDRESS} \\
+  --from=$VALIDATOR_KEY_NAME \\
+  --commission \\
+  --chain-id="$CHAIN_ID" \\
+  --fees="1000${DENOM}" \\
+  --yes
 ${DAEMON_NAME} tx distribution withdraw-all-rewards \\
   --from=$VALIDATOR_KEY_NAME \\
   --commission \\
@@ -209,18 +220,20 @@ chmod ug+x claim_commission.sh
 
 tee delegate.sh > /dev/null <<EOF
 #!/bin/bash
-${DAEMON_NAME} q bank balances $(${DAEMON_NAME} keys show $VALIDATOR_KEY_NAME -a)
+${DAEMON_NAME} q bank balances ${WALLET_ADDRESS}
 
 while true; do
     read -p "Enter the amount to delegate (in $DENOM, not 0): " amount
     if [[ ! \${amount} =~ ^[0-9]+(\.[0-9]*)?$ ]] || (( 10#\${amount} == 0 )); then
         echo "Invalid amount, please try again" >&2
     else
-        ${DAEMON_NAME} tx staking delegate $(${DAEMON_NAME} keys show $VALIDATOR_KEY_NAME --bech val -a) \${amount}${DENOM} \\
+        ${DAEMON_NAME} tx staking delegate ${VALOPER_ADDRESS} \${amount}${DENOM} \\
         --from=$VALIDATOR_KEY_NAME \\
         --chain-id="$CHAIN_ID" \\
         --gas="200000" \\
         --gas-prices="0.025${DENOM}"
+
+        exit 0
     fi
 done
 EOF
