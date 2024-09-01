@@ -11,9 +11,9 @@ SNAP_RPC="https://empeiria-testnet-rpc.cryptonode.id:443"
 SEEDS=""
 DENOM='uempe'
 REPO=""
-BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.1.0/emped_linux_amd64.tar.gz"
+BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.2.2/emped_v0.2.2_linux_amd64.tar.gz"
 REPO_DIR="empe-chains"
-BRANCH="v0.1.0"
+BRANCH="v0.2.2"
 GOPATH=$HOME/go
 VALIDATOR_CREATE_FILE="cli" # json or cli
 
@@ -70,8 +70,8 @@ fi
 if ! grep -q "export DAEMON_HOME=${DAEMON_HOME}" $HOME/.profile; then
     echo "export DAEMON_HOME=${DAEMON_HOME}" >> $HOME/.profile
 fi
-if ! grep -q "export DAEMON_RESTART_AFTER_UPGRADE=false" $HOME/.profile; then
-    echo "export DAEMON_RESTART_AFTER_UPGRADE=false" >> $HOME/.profile
+if ! grep -q "export DAEMON_RESTART_AFTER_UPGRADE=true" $HOME/.profile; then
+    echo "export DAEMON_RESTART_AFTER_UPGRADE=true" >> $HOME/.profile
 fi
 if ! grep -q "export DAEMON_ALLOW_DOWNLOAD_BINARIES=true" $HOME/.profile; then
     echo "export DAEMON_ALLOW_DOWNLOAD_BINARIES=true" >> $HOME/.profile
