@@ -11,7 +11,7 @@ SNAP_RPC="https://empeiria-testnet-rpc.cryptonode.id:443"
 SEEDS=""
 DENOM='uempe'
 REPO=""
-BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.2.2/emped_v0.2.2_linux_amd64.tar.gz"
+BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.3.0/emped_v0.3.0_linux_amd64.tar.gz"
 REPO_DIR="empe-chains"
 BRANCH="v0.2.2"
 GOPATH=$HOME/go
@@ -33,15 +33,15 @@ if ! grep -q "export PATH=.*$GOPATH/bin" ~/.profile; then
 fi
 source $HOME/.profile
 ##Check and install Go
-GO_VERSION=$(go version 2>/dev/null | grep -oP 'go1\.22\.0')
-if [ -z "$(echo "$GO_VERSION" | grep -E 'go1\.22\.0')" ]; then
-    echo "Go is not installed or not version 1.22.0. Installing Go 1.22.0..."
-    wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz
+GO_VERSION=$(go version 2>/dev/null | grep -oP 'go1\.23\.0')
+if [ -z "$(echo "$GO_VERSION" | grep -E 'go1\.23\.0')" ]; then
+    echo "Go is not installed or not version 1.23.0. Installing Go 1.23.0..."
+    wget https://go.dev/dl/go1.23.0.linux-amd64.tar.gz
     sudo rm -rf $(which go)
-    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
-    rm go1.22.0.linux-amd64.tar.gz
+    sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.23.0.linux-amd64.tar.gz
+    rm go1.23.0.linux-amd64.tar.gz
 else
-    echo "Go version 1.22.0 is already installed."
+    echo "Go version 1.23.0 is already installed."
 fi
 ##Check and install cosmovisor
 if ! command -v cosmovisor &> /dev/null; then
@@ -126,7 +126,11 @@ fi
 if ! grep -q 'export WALLET='${VALIDATOR_KEY_NAME} ~/.profile; then
     echo "export WALLET=${VALIDATOR_KEY_NAME}" >> ~/.profile
 fi
-source ~/.profile
+
+mkdir ${DAEMON_HOME}/lib
+wget https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.x86_64.so -P ${DAEMON_HOME}/lib
+echo "export LD_LIBRARY_PATH=${DAEMON_HOME}/lib:\$LD_LIBRARY_PATH" >> ${HOME}/.profile
+source ${HOME}/.profile
 
 mkdir -p ${DAEMON_HOME}/cosmovisor/genesis/bin
 mkdir -p ${DAEMON_HOME}/cosmovisor/upgrades
@@ -332,6 +336,7 @@ Environment="DAEMON_NAME=${DAEMON_NAME}"
 Environment="DAEMON_HOME=${DAEMON_HOME}"
 Environment="DAEMON_RESTART_AFTER_UPGRADE=false"
 Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=true"
+Environment="LD_LIBRARY_PATH=${DAEMON_HOME}/lib:$LD_LIBRARY_PATH"
 
 [Install]
 WantedBy=multi-user.target
