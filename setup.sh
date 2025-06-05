@@ -11,9 +11,9 @@ SNAP_RPC="https://empeiria-testnet-rpc.cryptonode.id:443"
 SEEDS=""
 DENOM='uempe'
 REPO=""
-BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.3.0/emped_v0.3.0_linux_amd64.tar.gz"
+BIN_REPO="https://github.com/empe-io/empe-chain-releases/raw/master/v0.4.0/emped_v0.4.0_linux_amd64.tar.gz"
 REPO_DIR="empe-chains"
-BRANCH="v0.2.2"
+BRANCH="v0.4.0"
 GOPATH=$HOME/go
 VALIDATOR_CREATE_FILE="cli" # json or cli
 
